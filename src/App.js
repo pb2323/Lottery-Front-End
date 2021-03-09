@@ -24,6 +24,7 @@ export default class App extends Component {
     account: "",
     balance: "",
     players: [],
+    message: "",
   };
   async componentDidMount() {
     const account = await window.ethereum.request({
@@ -43,6 +44,43 @@ export default class App extends Component {
           {this.state.players.length} players entered, competing to win{" "}
           {web3.utils.fromWei(this.state.balance, "ether")} ether!
         </p>
+        <hr />
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            this.setState({ message: "Waiting for transaction success" });
+            await lottery.methods.enter().send({
+              from: this.state.account,
+              value: web3.utils.toWei(this.state.value, "ether"),
+            });
+            this.setState({ message: "You have been entered" });
+          }}
+        >
+          <h4>Want to try your luck?</h4>
+          <div>
+            <label>Amount of ether to enter</label>
+            <input
+              type="float"
+              value={this.state.value}
+              onChange={(e) => this.setState({ value: e.target.value })}
+            />
+          </div>
+          <button>Enter</button>
+        </form>
+        <h4>Ready to pick a winner?</h4>
+        <button
+          onClick={async () => {
+            this.setState({ message: "Waiting for transaction success" });
+            await lottery.methods
+              .pickWinner()
+              .send({ from: this.state.account });
+            this.setState({ message: "A winner has been picked" });
+          }}
+        >
+          Pick a winner!
+        </button>
+        <hr />
+        <h2>{this.state.message}</h2>
       </div>
     );
   }
